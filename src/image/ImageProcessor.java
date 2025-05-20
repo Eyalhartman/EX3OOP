@@ -46,7 +46,7 @@ public class ImageProcessor {
 		for (int row = 0; row < originalHeight; row++) {
 			for (int col = 0; col < originalWidth; col++) {
 				paddedPixels[row + verticalOffset][col + horizontalOffset] =
-						sourceImage.getPixel(col, row);
+						sourceImage.getPixel(row, col);
 			}
 		}
 
@@ -76,8 +76,8 @@ public class ImageProcessor {
 				for (int pixelRow = 0; pixelRow < squareSize; pixelRow++) {
 					for (int pixelCol = 0; pixelCol < squareSize; pixelCol++) {
 						// Calculate the source pixel coordinates
-						int sourceX = colIndex * squareSize + pixelCol;
-						int sourceY = rowIndex * squareSize + pixelRow;
+						int sourceY = colIndex * squareSize + pixelCol;
+						int sourceX = rowIndex * squareSize + pixelRow;
 						cellPixels[pixelRow][pixelCol] =
 								sourceImage.getPixel(sourceX, sourceY);
 					}

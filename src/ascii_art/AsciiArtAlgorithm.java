@@ -1,5 +1,7 @@
 package ascii_art;
 
+import ascii_output.ConsoleAsciiOutput;
+import ascii_output.HtmlAsciiOutput;
 import image.Image;
 import image_char_matching.SubImgCharMatcher;
 import image.ImageProcessor;
@@ -34,18 +36,27 @@ public class AsciiArtAlgorithm {
 	}
 
 	public static void main(String[] args) {
-		char[] set = {'m', 'o'};
-		int res = 2;
+		char[] set = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+		char[] set2 = new char[128];
+		for (int i = 0; i < set2.length; i++) {
+			set2[i] = (char) i;
+		}
+		int res = 256;
 		try{
 
 			Image image1 = new Image(args[0]);
-			AsciiArtAlgorithm ascii = new AsciiArtAlgorithm(image1,res,set);
+			AsciiArtAlgorithm ascii = new AsciiArtAlgorithm(image1,res,set2);
 			char[][] charset = ascii.run();
-			for (int i = 0; i<charset.length;i++){
-				for (int j = 0;j<charset[0].length;j++){
-					System.out.println(charset[i][j]);
-				}
-			}
+			HtmlAsciiOutput htmlAsciiOutput = new HtmlAsciiOutput("output.html",
+					"Courier New");
+			htmlAsciiOutput.out(charset);
+//			ConsoleAsciiOutput consoleAsciiOutput = new ConsoleAsciiOutput();
+//			consoleAsciiOutput.out(charset);
+//			for (int i = 0; i<charset.length;i++){
+//				for (int j = 0;j<charset[0].length;j++){
+//					System.out.println(charset[i][j]);
+//				}
+//			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
