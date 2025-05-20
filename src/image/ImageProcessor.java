@@ -4,6 +4,7 @@ import java.awt.*;
 
 /**
  * Utility class for image processing operations such as padding, splitting, brightness calculation, etc.
+ * @author Eyal and Dana
  */
 public class ImageProcessor {
 	final static int MAX_RGB = 255;
@@ -126,6 +127,7 @@ public class ImageProcessor {
 		}
 		return p;
 	}
+
 	}
 
 
