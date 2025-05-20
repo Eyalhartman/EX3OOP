@@ -37,6 +37,7 @@ public class AsciiArtAlgorithm {
 		char[] set = {'m', 'o'};
 		int res = 2;
 		try{
+
 			Image image1 = new Image(args[0]);
 			AsciiArtAlgorithm ascii = new AsciiArtAlgorithm(image1,res,set);
 			char[][] charset = ascii.run();
