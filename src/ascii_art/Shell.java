@@ -1,5 +1,8 @@
 package ascii_art;
 
+import image.Image;
+
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
@@ -20,24 +23,45 @@ public class Shell {
 	private static final int AFTER_LAST_ASCII_INDEX = 126;
 	private static final String SPACE_MSG = "space";
 	private static final char HYPHEN_CHAR = '-';
+	private static final String RES_MSG = "res ";
+	private static final int AFTER_RES_INDEX = RES_MSG.length();
 	private static final String INCORRECT_ADD_MSG = "Did not add due to incorrect format.";
 	private static final String REMOVE_MSG = "remove";
 	private static final String INCORRECT_REMOVE_MSG = "Did not remove due to incorrect format.";
+	private static final String INCORRECT_RES_FORMAT_MSG
+			= "Did not change resolution due to incorrect format.";
+	private static final String INCORRECT_RES_BOUND_MSG
+			= "Did not change resolution due to exceeding boundaries.";
 
 	Set<Character> charset;
 	int res;
 	int counter=0;
+	private int maxCharsInRow;
+	private int minCharsInRow;
 
 	public Shell(){
 		this.charset = new TreeSet<>(Arrays.asList(DEFULT_CHAR_SET));
 
 		this.res = DEFULT_RES;
 		counter+=DEFULT_CHAR_SET.length;
+
 	}
 
 
 	//todo add exceptions
-	public void run(String imageName) {
+	public void run(String imageName) throws IOException {
+		try {
+			Image image = new Image(imageName);
+			int imgWidth  = image.getWidth();
+			int imgHeight = image.getHeight();
+
+			this.maxCharsInRow = imgWidth;
+			this.minCharsInRow = Math.max(1, imgWidth / imgHeight);
+			this.res           = DEFULT_RES;
+		} catch (IOException e) {
+			System.out.println("Image not found.");
+			return;
+		}
 		System.out.print(">>> ");
 		String action = KeyboardInput.readLine();
 		if (action.startsWith(CHARS_MSG)) {
@@ -50,6 +74,9 @@ public class Shell {
 		}
 		if (action.startsWith(REMOVE_MSG)){
 			remove_cmd(action);
+		}
+		if (action.startsWith(RES_MSG)) {
+			changeRes_cmd(action);
 		}
 
 		while (!(action.startsWith(EXIT_MSG))) {
@@ -65,6 +92,9 @@ public class Shell {
 			}
 			if (action.startsWith(REMOVE_MSG)){
 				remove_cmd(action);
+			}
+			if (action.startsWith(RES_MSG)) {
+				changeRes_cmd(action);
 			}
 
 		}
@@ -146,6 +176,34 @@ public class Shell {
 			System.out.print(c + " ");
 		}
 		System.out.println();
+	}
+
+	private void changeRes_cmd(String action) {
+		String param = action.substring(AFTER_RES_INDEX).trim();
+
+		if (param.isEmpty()) {
+			System.out.println("Resolution set to " + res + ".");
+			return;
+		}
+
+		int newRes;
+		if (param.startsWith("up")) {
+			newRes = res * 2;
+		}
+		else if (param.startsWith("down")) {
+			newRes = res / 2;
+		}
+		else {
+			System.out.println(INCORRECT_RES_FORMAT_MSG);
+			return;
+		}
+
+		if (newRes < minCharsInRow || newRes > maxCharsInRow) {
+			System.out.println(INCORRECT_RES_BOUND_MSG);
+		} else {
+			res = newRes;
+			System.out.println("Resolution set to " + res + ".");
+		}
 	}
 
 
