@@ -1,20 +1,20 @@
 package image_char_matching;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.TreeMap;
+import java.util.*;
 
-import static java.util.Collections.min;
 
 public class SubImgCharMatcher {
-	private TreeMap<Double, Character> treeMap = new TreeMap<>();
+	private static final int NUM_SIZE_BOOL_ARR = 16*16;
+	private Map<Character, Double> brightnessMap = new HashMap<>() {};
 	private List<Character> charset= new ArrayList<>();
 
 	//בנאי המקבל כפרמטר מערך של תווים שיהוו את סט התווים לשימוש האלגוריתם.
 	public SubImgCharMatcher(char[] charset) {
-		for (int i =0; i<charset.length;i++){
-			this.charset.add(charset[i]);
+		for (char c: charset){
+			this.charset.add(c);
+			this.brightnessMap.put(c, calcBrightness(c));
 		}
+		normalizingBrightness();
 	}
 
 
@@ -22,35 +22,63 @@ public class SubImgCharMatcher {
 	// בערך מוחלט לבהירות הנתונה. חשוב!!: אם יש מספר תווים מתוך הסט בעלי בהירות זהה יוחזר התו עם הערך
 	// הASCII הנמוך ביניהם
 	public char getCharByImageBrightness(double brightness){
-		Double floor = treeMap.floorKey(brightness);
-		Double ceil = treeMap.ceilingKey(brightness);
+		Double closestBrihtness = Double.MAX_VALUE;
+		char bestChar=' ';
 
-		if (floor == null && ceil != null){
-			return treeMap.get(ceil);
-		}
 
-		if (ceil == null && floor != null){
-			return treeMap.get(floor);
+		for (Map.Entry<Character, Double> entry : brightnessMap.entrySet()){
+			double diff = Math.abs(entry.getValue()-brightness);
+			if (diff < closestBrihtness){
+				closestBrihtness = diff;
+				bestChar = entry.getKey();
+			}
+			else if (diff == closestBrihtness && entry.getKey() < bestChar) {
+				bestChar = entry.getKey();
+			}
 		}
-
-		if (Math.abs(brightness-floor) > Math.abs(ceil-brightness)){
-			return treeMap.get(ceil);
-		}
-		if (Math.abs(brightness- floor)  < Math.abs(ceil-brightness)){
-			return treeMap.get(floor);
-		}
-		return treeMap.get(Math.min(Math.abs(ceil), Math.abs(floor)));
+		return bestChar;
 	}
 
 
 	//מתודה שמוסיפה את התו c לסט התווים.
 	public void addChar(char c){
 		this.charset.add(c);
+		this.brightnessMap.put(c, calcBrightness(c));
+		normalizingBrightness();
 	}
 
 
 	//מתודה שמסירה את התו c מסט התווים.
 	public void removeChar(char c){
 		this.charset.remove(c);
+		this.brightnessMap.remove(c);
+		normalizingBrightness();
+	}
+
+	private double calcBrightness(char c){
+		boolean[][] charToBool = CharConverter.convertToBoolArray(c);
+		int trueCounter = 0;
+		for (int i=0;i<charToBool.length;i++){
+			for (int j=0; j<charToBool[i].length;j++){
+				if (charToBool[i][j]){
+					trueCounter++;
+				}
+			}
+		}
+		return (double) trueCounter /NUM_SIZE_BOOL_ARR;
+	}
+
+	private void normalizingBrightness(){
+		double minVal = Collections.min(this.brightnessMap.values());
+		double maxVal = Collections.max(this.brightnessMap.values());
+		double maxMinusMin = maxVal-minVal;
+
+		TreeMap<Character, Double> normalizedMap = new TreeMap<>();
+
+		for (Map.Entry<Character, Double> entry : brightnessMap.entrySet()) {
+			double newVal = (entry.getValue() - minVal) / maxMinusMin;
+			normalizedMap.put(entry.getKey(), newVal);
+		}
+		this.brightnessMap = normalizedMap;
 	}
 }
