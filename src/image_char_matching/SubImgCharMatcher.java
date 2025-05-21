@@ -7,6 +7,9 @@ public class SubImgCharMatcher {
 	private static final int NUM_SIZE_BOOL_ARR = 16*16;
 	private Map<Character, Double> brightnessMap = new HashMap<>() {};
 	private List<Character> charset= new ArrayList<>();
+	private RoundingMode roundingMode;
+	private final double minBrightness;
+	private final double maxBrightness;
 
 	//בנאי המקבל כפרמטר מערך של תווים שיהוו את סט התווים לשימוש האלגוריתם.
 	public SubImgCharMatcher(char[] charset) {
@@ -15,6 +18,15 @@ public class SubImgCharMatcher {
 			this.brightnessMap.put(c, calcBrightness(c));
 		}
 		normalizingBrightness();
+		this.minBrightness = Collections.min(this.brightnessMap.values());
+		this.maxBrightness = Collections.max(this.brightnessMap.values());
+	}
+	public void setRoundingMode(RoundingMode mode) {
+		this.roundingMode = mode;
+	}
+
+	public RoundingMode getRoundingMode() {
+		return roundingMode;
 	}
 
 
@@ -22,21 +34,19 @@ public class SubImgCharMatcher {
 	// בערך מוחלט לבהירות הנתונה. חשוב!!: אם יש מספר תווים מתוך הסט בעלי בהירות זהה יוחזר התו עם הערך
 	// הASCII הנמוך ביניהם
 	public char getCharByImageBrightness(double brightness){
-		Double closestBrihtness = Double.MAX_VALUE;
-		char bestChar=' ';
+		// check if brightness is in range
+		double normalized = (brightness - minBrightness) / (maxBrightness - minBrightness);
+		normalized = Math.max(0, Math.min(1, normalized));
+        		// scale to the range of charset size
+		double scaled = normalized * (charset.size() - 1);
+		// round to the nearest index
 
+		int idx = roundingMode.apply(scaled);
+		// ensure index is within bounds
 
-		for (Map.Entry<Character, Double> entry : brightnessMap.entrySet()){
-			double diff = Math.abs(entry.getValue()-brightness);
-			if (diff < closestBrihtness){
-				closestBrihtness = diff;
-				bestChar = entry.getKey();
-			}
-			else if (diff == closestBrihtness && entry.getKey() < bestChar) {
-				bestChar = entry.getKey();
-			}
-		}
-		return bestChar;
+		idx = Math.max(0, Math.min(idx, charset.size() - 1));
+		// return the character at the calculated index
+		return charset.get(idx);
 	}
 
 

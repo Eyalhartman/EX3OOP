@@ -1,6 +1,14 @@
 package ascii_art;
 
+import ascii_output.ConsoleAsciiOutput;
+import ascii_output.HtmlAsciiOutput;
+import image.Image;
+import image_char_matching.RoundingMode;
+import image_char_matching.SubImgCharMatcher;
+
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -8,9 +16,9 @@ public class Shell {
 
 
 	private static final String EXIT_MSG = "exit";
-	private static final String CHARS_MSG = "chars ";
-	private static final Character[] DEFULT_CHAR_SET = {'0','1','2','3','4','5','6','7','8','9'};
-	private static final int DEFULT_RES = 2;
+	private static final String CHARS_MSG = "chars";
+	private static final Character[] DEFAULT_CHAR_SET = {'0','1','2','3','4','5','6','7','8','9'};
+	private static final int DEFAULT_RES = 2;
 	private static final String ADD_MSG = "add";
 	private static final char SPACE_CHAR = ' ';
 	private static final String ALL_MSG = "all";
@@ -22,32 +30,81 @@ public class Shell {
 	private static final String INCORRECT_ADD_MSG = "Did not add due to incorrect format.";
 	private static final String REMOVE_MSG = "remove";
 	private static final String INCORRECT_REMOVE_MSG = "Did not remove due to incorrect format.";
-	private static final int MAX_SIZE_SPLIT_ARR = 2;
+	private static final String ALL_ADD_MSG = "all";
+	private static final String RES_MSG = "res";
+	private static final String OUTPUT_MSG = "output";
+	private static final String ASCII_MSG = "asciiArt";
+	private static final String ROUND_MSG = "round";
+	private static final int AFTER_RES_INDEX = RES_MSG.length();
+	private static final String INCORRECT_RES_FORMAT_MSG
+			= "Did not change resolution due to incorrect format.";
+	private static final String INCORRECT_RES_BOUND_MSG
+			= "Did not change resolution due to exceeding boundaries.";
+	private static final String INCORRECT_OUTPUT_MSG = "Did not change output method due" +
+			" to incorrect format.";
+	private static final String INCORRECT_ASCII_MSG = "Did not execute. Charset is too small.";
+	private static final String INCORRECT_OUTPUT_FORMAT_MSG = "Did not execute due to incorrect command.";
+	private static final String INCORRECT_ROUNDING_MODE_MSG = "Did not change rounding" +
+			" method due to incorrect format.";
+	private static final String[] OUTPUT_OPTIONS = {"html", "console"};
+
 
 	Set<Character> charset;
 	int res;
+	private Image image;
+	private int maxCharsInRow;
+	private int minCharsInRow;
+	private String output = "console";
+	private RoundingMode roundingMode;
+	private SubImgCharMatcher matcher;
+	private boolean matcherDirty = true;
+	private AsciiArtAlgorithm asciiAlgo;
+	private boolean asciiAlgoDirty = true;
+
 
 	public Shell(){
-		this.charset = new TreeSet<>(Arrays.asList(DEFULT_CHAR_SET));
-		this.res = DEFULT_RES;
+		this.charset = new TreeSet<>(Arrays.asList(DEFAULT_CHAR_SET));
+		this.res = DEFAULT_RES;
+		this.roundingMode = RoundingMode.NEAREST;
 	}
 
 
 	//todo add exceptions
 	public void run(String imageName) {
+		if (extractImg(imageName)) return;
 
 		while (true) {
 			System.out.print(">>> ");
 			String action = KeyboardInput.readLine();
 
 			if (action.startsWith(EXIT_MSG))  break;
-
-			if (action.startsWith(CHARS_MSG))  chars_cmd();
-			if (action.startsWith(ADD_MSG)) add_cmd(action);
-			if (action.startsWith(REMOVE_MSG)) remove_cmd(action);
-
+			else if (action.startsWith(CHARS_MSG))  {chars_cmd();matcherDirty = true;}
+			else if (action.startsWith(ADD_MSG)) {add_cmd(action); matcherDirty = true;}
+			else if (action.startsWith(REMOVE_MSG)) {remove_cmd(action); matcherDirty = true;}
+			else if (action.startsWith(RES_MSG)) resCmd(action);
+			else if (action.startsWith(OUTPUT_MSG)) outputCmd(action);
+			else if (action.startsWith(ASCII_MSG)) asciiCmd(action);
+			else if (action.startsWith(ROUND_MSG)) roundCmd(action);
+			else System.out.println(INCORRECT_OUTPUT_FORMAT_MSG);
 		}
 
+	}
+
+	private boolean extractImg(String imageName) {
+		try {
+			this.image = new Image(imageName);
+			asciiAlgoDirty = true;
+			int imgWidth = image.getWidth();
+			int imgHeight = image.getHeight();
+
+			this.maxCharsInRow = imgWidth;
+			this.minCharsInRow = Math.max(1, imgWidth / imgHeight);
+			this.res = DEFAULT_RES;
+		} catch (IOException e) {
+			System.out.println("Image not found.");
+			return true;
+		}
+		return false;
 	}
 
 	private void remove_cmd(String action) {
@@ -141,8 +198,112 @@ public class Shell {
 		}
 	}
 
+	private void resCmd(String action) {
+		String param = action.substring(AFTER_RES_INDEX).trim();
+
+		if (param.isEmpty()) {
+			System.out.println("Resolution set to " + res + ".");
+			return;
+		}
+
+		int newRes;
+		if (param.startsWith("up")) {
+			newRes = res * 2;
+		} else if (param.startsWith("down")) {
+			newRes = res / 2;
+		} else {
+			System.out.println(INCORRECT_RES_FORMAT_MSG);
+			return;
+		}
+
+		if (newRes < minCharsInRow || newRes > maxCharsInRow) {
+			System.out.println(INCORRECT_RES_BOUND_MSG);
+		} else {
+			res = newRes;
+			asciiAlgoDirty = true;
+			System.out.println("Resolution set to " + res + ".");
+		}
+	}
+
+	private void roundCmd(String action) {
+		String param = action.substring(ROUND_MSG.length()).trim();
+		switch (param) {
+			case "up" ->{
+				this.roundingMode = RoundingMode.UP;
+				if (matcher != null) matcher.setRoundingMode(this.roundingMode);
+			}
+			case "down" ->{
+				this.roundingMode = RoundingMode.DOWN;
+				if (matcher != null) matcher.setRoundingMode(this.roundingMode);
+			}
+			case "abs" ->{
+				this.roundingMode = RoundingMode.NEAREST;
+				if (matcher != null) matcher.setRoundingMode(this.roundingMode);
+			}
+			default -> {
+				System.out.println(INCORRECT_ROUNDING_MODE_MSG);
+			}
+		}
+
+	}
+
+	private void outputCmd(String action) {
+		String output = action.substring(OUTPUT_MSG.length()).trim();
+		if (output.startsWith("html")) {
+			this.output = OUTPUT_OPTIONS[0];
+		} else if (output.startsWith("console")) {
+			this.output = OUTPUT_OPTIONS[1];
+		} else {
+			System.out.println(INCORRECT_OUTPUT_MSG);
+		}
+	}
+
+	private void asciiCmd(String action) {
+		if (charset.size() < 2) {
+			System.out.println(INCORRECT_ASCII_MSG);
+			return;
+		}
+		char[] arrChar = toCharArray(charset);
+		if (matcherDirty) {
+			this.matcher = new SubImgCharMatcher(arrChar);
+			matcher.setRoundingMode(this.roundingMode);
+			matcherDirty = false;
+			asciiAlgoDirty = true;
+		}
+		if (asciiAlgoDirty) {
+			this.asciiAlgo = new AsciiArtAlgorithm(this.image, res, matcher);
+			asciiAlgoDirty = false;
+		}
+		char[][] charset = asciiAlgo.run();
+		if (Objects.equals(output, "html")) {
+			HtmlAsciiOutput htmlAsciiOutput = new HtmlAsciiOutput("output.html",
+					"Courier New");
+			htmlAsciiOutput.out(charset);
+		} else {
+			ConsoleAsciiOutput consoleAsciiOutput = new ConsoleAsciiOutput();
+			consoleAsciiOutput.out(charset);
+		}
+	}
+
+	private char[] toCharArray(Set<Character> set) {
+		char[] a = new char[set.size()];
+		int i = 0;
+		for (Character c : set) {
+			a[i++] = c;
+		}
+		return a;
+	}
 
 	public static void main(String[] args) {
+		Shell shell = new Shell();
+		if (args.length == 0) {
+			System.out.println("Please provide an image file name.");
+			return;
+		}
+		String imageName = args[0];
+		shell.run(imageName);
+		System.out.println("Goodbye!");
+		System.exit(0);
 
 	}
 }
