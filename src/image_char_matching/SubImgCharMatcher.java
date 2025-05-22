@@ -49,6 +49,9 @@ public class SubImgCharMatcher {
 		normalizingBrightness();
 		this.minBrightness = Collections.min(this.brightnessMap.values());
 		this.maxBrightness = Collections.max(this.brightnessMap.values());
+		this.charset.sort(
+				Comparator.comparingDouble(brightnessMap::get)
+		);
 	}
 
 	/**
