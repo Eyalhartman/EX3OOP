@@ -11,7 +11,10 @@ package image_char_matching;
  * @author Eyal and Dana
  */
 public enum RoundingMode {
-
+    	/**
+	 * Rounds the value to the nearest integer using standard rounding.
+	 * Example: 2.5 → 3, 2.4 → 2
+	 */
 	UP {
 		/**
 		 * Rounds the value up to the nearest integer (ceiling).
@@ -23,7 +26,10 @@ public enum RoundingMode {
 		}
 	},
 
-
+    	/**
+	 * Rounds the value to the nearest integer using standard rounding.
+	 * Example: 2.5 → 3, 2.4 → 2
+	 */
 	DOWN {
 		/**
 		 * Rounds the value down to the nearest integer (floor).
@@ -34,7 +40,10 @@ public enum RoundingMode {
 			return (int) Math.floor(value);
 		}
 	},
-
+    	/**
+	 * Rounds the value to the nearest integer using standard rounding.
+	 * Example: 2.5 → 3, 2.4 → 2
+	 */
 	NEAREST {
 		/**
 		 * Rounds the value to the nearest integer using standard rounding.

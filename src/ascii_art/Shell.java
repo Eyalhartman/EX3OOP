@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+
 /**
  * The {@code Shell} class provides an interactive command-line interface for users
  * to control an ASCII art generation application. It supports image loading, character
@@ -28,18 +29,14 @@ import java.util.TreeSet;
  *   <li>{@code asciiArt} - generate and display the ASCII art</li>
  *   <li>{@code round up/down/abs} - change rounding strategy</li>
  * </ul>
- *
+ * <p>
  * The shell maintains internal consistency by marking its matcher and algorithm as "dirty"
- * when configuration changes, and reinitializes them when needed.
+ * when configuration changes, and reinitialized them when needed.
  * </p>
- *
  *
  * @author Eyal and Dana
  */
 public class Shell {
-
-
-	public static final String GOODBYE_MSG = "Goodbye!";
 	private static final String EXIT_MSG = "exit";
 	private static final String CHARS_MSG = "chars";
 	private static final Character[] DEFAULT_CHAR_SET = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
@@ -79,14 +76,15 @@ public class Shell {
 	private static final int INDEX_HYPHEN_CHAR = 1;
 	private static final String UP_MSG = "up";
 	private static final String DOWN_MSG = "down";
-	public static final String ABS_MSG = "abs";
-	public static final String HTML_MSG = "html";
-	public static final String CONSOLE_MSG = "console";
-	public static final String IMAGE_FILE_NAME_MSG = "Please provide an image file name.";
-	public static final String OUTPUT_HTML_FILENAME = "output.html";
-	public static final String FONT_NAME = "Courier New";
-	public static final String CMD_MSG = ">>> ";
-	public static final int NEW_RES_FACTOR = 2;
+	private static final String ABS_MSG = "abs";
+	private static final String HTML_MSG = "html";
+	private static final String CONSOLE_MSG = "console";
+	private static final String OUTPUT_HTML_FILENAME = "output.html";
+	private static final String FONT_NAME = "Courier New";
+	private static final String CMD_MSG = ">>> ";
+	private static final int NEW_RES_FACTOR = 2;
+	private static final String RESOLUTION_SET_TO = "Resolution set to ";
+	private static final String DOT = ".";
 
 
 	Set<Character> charset;
@@ -94,7 +92,7 @@ public class Shell {
 	private Image image;
 	private int maxCharsInRow;
 	private int minCharsInRow;
-	private String output = "console";
+	private String output = CONSOLE_MSG;
 	private RoundingMode roundingMode;
 	private SubImgCharMatcher matcher;
 	private boolean matcherDirty = true;
@@ -129,13 +127,13 @@ public class Shell {
 
 				if (action.startsWith(EXIT_MSG)) break;
 				else if (action.startsWith(CHARS_MSG)) {
-					chars_cmd();
+					charsCmd();
 					matcherDirty = true;
 				} else if (action.startsWith(ADD_MSG)) {
-					add_cmd(action);
+					addCmd(action);
 					matcherDirty = true;
 				} else if (action.startsWith(REMOVE_MSG)) {
-					remove_cmd(action);
+					removeCmd(action);
 					matcherDirty = true;
 				} else if (action.startsWith(RES_MSG)) resCmd(action);
 				else if (action.startsWith(OUTPUT_MSG)) outputCmd(action);
@@ -173,14 +171,12 @@ public class Shell {
 	 * @param action the full user input starting with "remove"
 	 * @throws IOException if the input format is invalid
 	 */
-	private void remove_cmd(String action) throws IOException {
-
+	private void removeCmd(String action) throws IOException {
 		String[] parts = action.split(SPLIT_STRING);
 		if (parts.length < PARTS_LENGTH) {
 			throw new IOException(INCORRECT_REMOVE_MSG);
 		}
 		String specificRemove = parts[CHAR_LENGTH];
-
 		switch (specificRemove) {
 			case ALL_MSG:
 				for (char i = FIRST_ASCII_INDEX; i < AFTER_LAST_ASCII_INDEX; i++) {
@@ -193,23 +189,15 @@ public class Shell {
 				matcher.removeChar(SPACE_CHAR);
 				return;
 		}
-
 		if (specificRemove.length() == CHAR_LENGTH) {
-			char charToRemove = specificRemove.charAt(INDEX_FIRST_CHAR);
-			if (charToRemove > FIRST_ASCII_INDEX && charToRemove < AFTER_LAST_ASCII_INDEX) {
-				this.charset.remove(specificRemove.charAt(INDEX_FIRST_CHAR));
-				matcher.removeChar(specificRemove.charAt(INDEX_FIRST_CHAR));
-			}
+			removeCmdHelper(specificRemove);
 			return;
 		}
-
 		if (specificRemove.charAt(INDEX_HYPHEN_CHAR) == HYPHEN_CHAR) {
 			char charARemove = specificRemove.charAt(INDEX_FIRST_CHAR);
 			char charBRemove = specificRemove.charAt(INDEX_SECOND_CHAR_RANGE);
-			if (charARemove > FIRST_ASCII_INDEX &&
-					charARemove < AFTER_LAST_ASCII_INDEX &&
-					charBRemove > FIRST_ASCII_INDEX &&
-					charBRemove < AFTER_LAST_ASCII_INDEX) {
+			if (charARemove > FIRST_ASCII_INDEX && charARemove < AFTER_LAST_ASCII_INDEX &&
+					charBRemove > FIRST_ASCII_INDEX && charBRemove < AFTER_LAST_ASCII_INDEX) {
 				char charStart = (char) Math.min(charARemove, charBRemove), charEnd =
 						(char) Math.max(charARemove, charBRemove);
 				for (char i = charStart; i <= charEnd; i++) {
@@ -221,6 +209,18 @@ public class Shell {
 			throw new IOException(INCORRECT_REMOVE_MSG);
 		}
 	}
+	/**
+	 * Helper method to remove a single character from the charset and matcher.
+	 *
+	 * @param specificRemove the character to be removed
+	 */
+	private void removeCmdHelper(String specificRemove) {
+		char charToRemove = specificRemove.charAt(INDEX_FIRST_CHAR);
+		if (charToRemove > FIRST_ASCII_INDEX && charToRemove < AFTER_LAST_ASCII_INDEX) {
+			this.charset.remove(specificRemove.charAt(INDEX_FIRST_CHAR));
+			matcher.removeChar(specificRemove.charAt(INDEX_FIRST_CHAR));
+		}
+	}
 
 	/**
 	 * Parses and executes a character addition command.
@@ -228,7 +228,7 @@ public class Shell {
 	 * @param action the full user input starting with "add"
 	 * @throws IOException if the input format is invalid
 	 */
-	private void add_cmd(String action) throws IOException {
+	private void addCmd(String action) throws IOException {
 		String[] parts = action.split(SPLIT_STRING);
 		if (parts.length < PARTS_LENGTH) {
 			throw new IOException(INCORRECT_ADD_MSG);
@@ -246,23 +246,14 @@ public class Shell {
 				matcher.addChar(SPACE_CHAR);
 				return;
 		}
-
 		if (specificAdd.length() == CHAR_LENGTH) {
-			char charToAdd = specificAdd.charAt(INDEX_FIRST_CHAR);
-			if (charToAdd > FIRST_ASCII_INDEX && charToAdd < AFTER_LAST_ASCII_INDEX) {
-				this.charset.add(charToAdd);
-				matcher.addChar(charToAdd);
-				return;
-			}
+			if (addCmdHelper(specificAdd)) return;
 		}
-
 		if (specificAdd.charAt(INDEX_HYPHEN_CHAR) == HYPHEN_CHAR) {
 			char charAAdd = specificAdd.charAt(INDEX_FIRST_CHAR);
 			char charBAdd = specificAdd.charAt(INDEX_SECOND_CHAR_RANGE);
-			if (charAAdd > FIRST_ASCII_INDEX &&
-					charAAdd < AFTER_LAST_ASCII_INDEX &&
-					charBAdd > FIRST_ASCII_INDEX &&
-					charBAdd < AFTER_LAST_ASCII_INDEX) {
+			if (charAAdd > FIRST_ASCII_INDEX && charAAdd < AFTER_LAST_ASCII_INDEX &&
+					charBAdd > FIRST_ASCII_INDEX && charBAdd < AFTER_LAST_ASCII_INDEX) {
 				char charStart = (char) Math.min(charAAdd, charBAdd), charEnd =
 						(char) Math.max(charAAdd, charBAdd);
 				for (char i = charStart; i <= charEnd; i++) {
@@ -274,11 +265,26 @@ public class Shell {
 			throw new IOException(INCORRECT_ADD_MSG);
 		}
 	}
+    	/**
+	 * Helper method to add a single character to the charset and matcher.
+	 *
+	 * @param specificAdd the character to be added
+	 * @return true if the character was added, false otherwise
+	 */
+	private boolean addCmdHelper(String specificAdd) {
+		char charToAdd = specificAdd.charAt(INDEX_FIRST_CHAR);
+		if (charToAdd > FIRST_ASCII_INDEX && charToAdd < AFTER_LAST_ASCII_INDEX) {
+			this.charset.add(charToAdd);
+			matcher.addChar(charToAdd);
+			return true;
+		}
+		return false;
+	}
 
 	/**
 	 * Prints the current character set in ASCII order.
 	 */
-	private void chars_cmd() {
+	private void charsCmd() {
 		if (!charset.isEmpty()) {
 			for (char c : this.charset) {
 				System.out.print(c + SPLIT_STRING);
@@ -297,7 +303,7 @@ public class Shell {
 		String param = action.substring(AFTER_RES_INDEX).trim();
 
 		if (param.isEmpty()) {
-			System.out.println("Resolution set to " + res + ".");
+			System.out.println(RESOLUTION_SET_TO + res + DOT);
 			return;
 		}
 
@@ -307,15 +313,15 @@ public class Shell {
 		} else if (param.startsWith(DOWN_MSG)) {
 			newRes = res / NEW_RES_FACTOR;
 		} else {
-			throw new IOException(INCORRECT_REMOVE_MSG);
+			throw new IOException(INCORRECT_RES_FORMAT_MSG);
 		}
 
 		if (newRes < minCharsInRow || newRes > maxCharsInRow) {
-			throw new IOException(INCORRECT_REMOVE_MSG);
+			throw new IOException(INCORRECT_RES_BOUND_MSG);
 		} else {
 			res = newRes;
 			asciiAlgoDirty = true;
-			System.out.println("Resolution set to " + res + ".");
+			System.out.println(RESOLUTION_SET_TO + res + DOT);
 		}
 	}
 
@@ -411,7 +417,7 @@ public class Shell {
 	}
 
 	/**
-	 * Entry point for the ASCII art shell program.
+	 * Entry point for the ASCII art she'll program.
 	 * Expects the image file path as the first command-line argument.
 	 *
 	 * @param args command-line arguments
@@ -419,13 +425,8 @@ public class Shell {
 	 */
 	public static void main(String[] args) throws IOException {
 		Shell shell = new Shell();
-		if (args.length == 0) {
-			System.out.println(IMAGE_FILE_NAME_MSG);
-			return;
-		}
 		String imageName = args[INDEX_FIRST_CHAR];
 		shell.run(imageName);
-		System.out.println(GOODBYE_MSG);
 		System.exit(0);
 
 
