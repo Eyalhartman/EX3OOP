@@ -161,27 +161,27 @@ public class Shell {
 				for (char i = FIRST_ASCII_INDEX; i < AFTER_LAST_ASCII_INDEX; i++)  this.charset.remove(i);
 				return;
 			case SPACE_MSG:
-				this.charset.remove(SPACE_CHAR);
+				this.charset.add(SPACE_CHAR);
 				return;
 		}
 
 		if (specificAdd.length()== 1) {
-			char charToRemove = specificAdd.charAt(0);
-			if ( charToRemove> FIRST_ASCII_INDEX && charToRemove < AFTER_LAST_ASCII_INDEX) {
-				this.charset.remove(specificAdd.charAt(FIRST_INDEX));
+			char charToAdd = specificAdd.charAt(0);
+			if ( charToAdd> FIRST_ASCII_INDEX && charToAdd < AFTER_LAST_ASCII_INDEX) {
+				this.charset.add(specificAdd.charAt(FIRST_INDEX));
 			}
 		}
 
 		if (specificAdd.charAt(1)== HYPHEN_CHAR){
-			char charARemove = specificAdd.charAt(0);
-			char charBRemove = specificAdd.charAt(2);
-			if (charARemove>FIRST_ASCII_INDEX &&
-					charARemove<AFTER_LAST_ASCII_INDEX &&
-					charBRemove>FIRST_ASCII_INDEX &&
-					charBRemove<AFTER_LAST_ASCII_INDEX) {
-				char charStart = (char)Math.min(charARemove, charBRemove), charEnd =
-						(char)Math.max(charARemove, charBRemove);
-				for (char i = charStart; i<=charEnd;i++) this.charset.remove(i);
+			char charAAdd = specificAdd.charAt(0);
+			char charBAdd = specificAdd.charAt(2);
+			if (charAAdd>FIRST_ASCII_INDEX &&
+					charAAdd<AFTER_LAST_ASCII_INDEX &&
+					charBAdd>FIRST_ASCII_INDEX &&
+					charBAdd<AFTER_LAST_ASCII_INDEX) {
+				char charStart = (char)Math.min(charAAdd, charBAdd), charEnd =
+						(char)Math.max(charAAdd, charBAdd);
+				for (char i = charStart; i<=charEnd;i++) this.charset.add(i);
 			}
 		}
 		else{
