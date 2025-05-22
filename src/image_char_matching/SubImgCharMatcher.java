@@ -1,17 +1,43 @@
 package image_char_matching;
 
 import java.util.*;
-
+/**
+ * The {@code SubImgCharMatcher} class maps characters to their normalized brightness
+ * values based on a binary (black-and-white) image representation.
+ * <p>
+ * It is used to select the most appropriate ASCII character to represent a
+ * sub-image region in ASCII art generation, according to its average brightness.
+ * </p>
+ *
+ * <p>
+ * Internally, it computes the brightness of each character in the given set,
+ * normalizes the values to [0,1], and allows retrieving the closest character
+ * for a given brightness level using a configurable rounding mode.
+ * </p>
+ *
+ * <p>
+ * Supports dynamically adding and removing characters, and automatically
+ * recomputes brightness normalization when the set changes.
+ * @author Eyal and Dana
+ */
 
 public class SubImgCharMatcher {
 	private static final int NUM_SIZE_BOOL_ARR = 16*16;
+	private static final int MIN_VAL_ZERO = 0;
+	private static final int MIN_VALUE_ONE = 1;
+	private static final int ADD_SUB_ONE = 1;
 	private Map<Character, Double> brightnessMap = new HashMap<>() {};
 	private List<Character> charset= new ArrayList<>();
 	private RoundingMode roundingMode;
 	private final double minBrightness;
 	private final double maxBrightness;
 
-	//בנאי המקבל כפרמטר מערך של תווים שיהוו את סט התווים לשימוש האלגוריתם.
+	/**
+	 * Constructs a SubImgCharMatcher from a given array of characters.
+	 * Brightness values are computed and normalized to the range [0,1].
+	 *
+	 * @param charset the array of characters to include in the mapping.
+	 */
 	public SubImgCharMatcher(char[] charset) {
 		for (char c: charset){
 			this.charset.add(c);
@@ -21,36 +47,59 @@ public class SubImgCharMatcher {
 		this.minBrightness = Collections.min(this.brightnessMap.values());
 		this.maxBrightness = Collections.max(this.brightnessMap.values());
 	}
+
+	/**
+	 * Sets the rounding mode to use when mapping brightness to character index.
+	 *
+	 * @param mode the rounding mode (e.g., RoundingMode.HALF_UP)
+	 */
 	public void setRoundingMode(RoundingMode mode) {
 		this.roundingMode = mode;
 	}
 
+	/**
+	 * Returns the currently set rounding mode.
+	 *
+	 * @return the rounding mode in use
+	 */
 	public RoundingMode getRoundingMode() {
 		return roundingMode;
 	}
 
 
-	//בהינתן ערך בהירות (brightness) של תת תמונה, המתודה תחזיר את התו מתוך סט התווים עם הבהירות הכי קרובה
-	// בערך מוחלט לבהירות הנתונה. חשוב!!: אם יש מספר תווים מתוך הסט בעלי בהירות זהה יוחזר התו עם הערך
-	// הASCII הנמוך ביניהם
+
+	/**
+	 * Returns the character from the current set whose normalized brightness
+	 * most closely matches the provided brightness value, according to the
+	 * configured rounding mode.
+	 * If multiple characters have the same brightness, the one with the lowest
+	 * ASCII value is returned.
+	 *
+	 * @param brightness the brightness value of the sub-image (usually in [0,1])
+	 * @return the best-matching character
+	 */
 	public char getCharByImageBrightness(double brightness){
 		// check if brightness is in range
 		double normalized = (brightness - minBrightness) / (maxBrightness - minBrightness);
-		normalized = Math.max(0, Math.min(1, normalized));
+		normalized = Math.max(MIN_VAL_ZERO, Math.min(MIN_VALUE_ONE, normalized));
         		// scale to the range of charset size
-		double scaled = normalized * (charset.size() - 1);
+		double scaled = normalized * (charset.size() - ADD_SUB_ONE);
 		// round to the nearest index
 
 		int idx = roundingMode.apply(scaled);
 		// ensure index is within bounds
 
-		idx = Math.max(0, Math.min(idx, charset.size() - 1));
+		idx = Math.max(MIN_VAL_ZERO, Math.min(idx, charset.size() - ADD_SUB_ONE));
 		// return the character at the calculated index
 		return charset.get(idx);
 	}
 
 
-	//מתודה שמוסיפה את התו c לסט התווים.
+	/**
+	 * Adds a character to the set and updates the brightness map and normalization.
+	 *
+	 * @param c the character to add
+	 */
 	public void addChar(char c){
 		this.charset.add(c);
 		this.brightnessMap.put(c, calcBrightness(c));
@@ -58,7 +107,11 @@ public class SubImgCharMatcher {
 	}
 
 
-	//מתודה שמסירה את התו c מסט התווים.
+	/**
+	 * Removes a character from the set and updates the brightness map and normalization.
+	 *
+	 * @param c the character to remove
+	 */
 	public void removeChar(char c){
 		this.charset.remove(c);
 		this.brightnessMap.remove(c);
@@ -67,7 +120,8 @@ public class SubImgCharMatcher {
 
 	private double calcBrightness(char c){
 		boolean[][] charToBool = CharConverter.convertToBoolArray(c);
-		int trueCounter = 0;
+		int trueCounter = MIN_VAL_ZERO
+				;
 		for (int i=0;i<charToBool.length;i++){
 			for (int j=0; j<charToBool[i].length;j++){
 				if (charToBool[i][j]){

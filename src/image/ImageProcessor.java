@@ -11,6 +11,10 @@ public class ImageProcessor {
 	final static double RED = 0.2126;
 	final static double GREEN = 0.7152;
 	final static double BLUE = 0.0722;
+	private static final int HALF_DIVISOR = 2;
+	private static final int INITIAL_POWER = 1;
+	private static final int POWER_OF_TWO_BASE = 2;
+
 
 	// Private constructor to prevent instantiation
 	private ImageProcessor() {
@@ -39,8 +43,8 @@ public class ImageProcessor {
 		}
 
 		// Calculate offsets to center the original image
-		int horizontalOffset = (paddedWidth - originalWidth) / 2;
-		int verticalOffset   = (paddedHeight - originalHeight) / 2;
+		int horizontalOffset = (paddedWidth - originalWidth) / HALF_DIVISOR;
+		int verticalOffset   = (paddedHeight - originalHeight) / HALF_DIVISOR;
 
 		// Copy original pixels into centered position
 		for (int row = 0; row < originalHeight; row++) {
@@ -121,9 +125,9 @@ public class ImageProcessor {
 	 * @return smallest power of two >= n
 	 */
 	private static int nextPowerOfTwo(int n) {
-		int p = 1;
+		int p = INITIAL_POWER;
 		while (p < n) {
-			p *= 2;
+			p *= POWER_OF_TWO_BASE;
 		}
 		return p;
 	}
