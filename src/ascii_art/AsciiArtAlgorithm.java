@@ -64,7 +64,6 @@ public class AsciiArtAlgorithm {
 		char[][] brightness = new char[rows][cols];
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < cols; j++) {
-//
 				int key = i * cols + j;
 				final Image subImg = images[i][j];
 				double bri = brightnessCache.computeIfAbsent(key,
