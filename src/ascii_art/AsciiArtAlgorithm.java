@@ -67,10 +67,8 @@ public class AsciiArtAlgorithm {
 //
 				int key = i * cols + j;
 				final Image subImg = images[i][j];
-				double bri = brightnessCache.computeIfAbsent(
-						key,
-						k -> ImageProcessor.computeAverageBrightness(subImg)
-				);
+				double bri = brightnessCache.computeIfAbsent(key,
+						k -> ImageProcessor.computeAverageBrightness(subImg));
 				brightness[i][j] = matcher.getCharByImageBrightness(bri);
 
 			}

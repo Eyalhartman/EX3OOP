@@ -3,6 +3,7 @@ package image_char_matching;
 /**
  * Enum representing different rounding modes.
  * Each mode defines how to round a double value to an integer.
+ *
  * @author Eyal and Dana
  */
 public enum RoundingMode {

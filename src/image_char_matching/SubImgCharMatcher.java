@@ -1,6 +1,7 @@
 package image_char_matching;
 
 import java.util.*;
+
 /**
  * The {@code SubImgCharMatcher} class maps characters to their normalized brightness
  * values based on a binary (black-and-white) image representation.
@@ -18,16 +19,18 @@ import java.util.*;
  * <p>
  * Supports dynamically adding and removing characters, and automatically
  * recomputes brightness normalization when the set changes.
+ *
  * @author Eyal and Dana
  */
 
 public class SubImgCharMatcher {
-	private static final int NUM_SIZE_BOOL_ARR = 16*16;
+	private static final int NUM_SIZE_BOOL_ARR = 16 * 16;
 	private static final int MIN_VAL_ZERO = 0;
 	private static final int MIN_VALUE_ONE = 1;
 	private static final int ADD_SUB_ONE = 1;
-	private Map<Character, Double> brightnessMap = new HashMap<>() {};
-	private List<Character> charset= new ArrayList<>();
+	private Map<Character, Double> brightnessMap = new HashMap<>() {
+	};
+	private List<Character> charset = new ArrayList<>();
 	private RoundingMode roundingMode;
 	private final double minBrightness;
 	private final double maxBrightness;
@@ -39,7 +42,7 @@ public class SubImgCharMatcher {
 	 * @param charset the array of characters to include in the mapping.
 	 */
 	public SubImgCharMatcher(char[] charset) {
-		for (char c: charset){
+		for (char c : charset) {
 			this.charset.add(c);
 			this.brightnessMap.put(c, calcBrightness(c));
 		}
@@ -67,7 +70,6 @@ public class SubImgCharMatcher {
 	}
 
 
-
 	/**
 	 * Returns the character from the current set whose normalized brightness
 	 * most closely matches the provided brightness value, according to the
@@ -78,11 +80,11 @@ public class SubImgCharMatcher {
 	 * @param brightness the brightness value of the sub-image (usually in [0,1])
 	 * @return the best-matching character
 	 */
-	public char getCharByImageBrightness(double brightness){
+	public char getCharByImageBrightness(double brightness) {
 		// check if brightness is in range
 		double normalized = (brightness - minBrightness) / (maxBrightness - minBrightness);
 		normalized = Math.max(MIN_VAL_ZERO, Math.min(MIN_VALUE_ONE, normalized));
-        		// scale to the range of charset size
+		// scale to the range of charset size
 		double scaled = normalized * (charset.size() - ADD_SUB_ONE);
 		// round to the nearest index
 
@@ -100,7 +102,7 @@ public class SubImgCharMatcher {
 	 *
 	 * @param c the character to add
 	 */
-	public void addChar(char c){
+	public void addChar(char c) {
 		this.charset.add(c);
 		this.brightnessMap.put(c, calcBrightness(c));
 		normalizingBrightness();
@@ -112,30 +114,29 @@ public class SubImgCharMatcher {
 	 *
 	 * @param c the character to remove
 	 */
-	public void removeChar(char c){
+	public void removeChar(char c) {
 		this.charset.remove(c);
 		this.brightnessMap.remove(c);
 		normalizingBrightness();
 	}
 
-	private double calcBrightness(char c){
+	private double calcBrightness(char c) {
 		boolean[][] charToBool = CharConverter.convertToBoolArray(c);
-		int trueCounter = MIN_VAL_ZERO
-				;
-		for (int i=0;i<charToBool.length;i++){
-			for (int j=0; j<charToBool[i].length;j++){
-				if (charToBool[i][j]){
+		int trueCounter = MIN_VAL_ZERO;
+		for (int i = 0; i < charToBool.length; i++) {
+			for (int j = 0; j < charToBool[i].length; j++) {
+				if (charToBool[i][j]) {
 					trueCounter++;
 				}
 			}
 		}
-		return (double) trueCounter /NUM_SIZE_BOOL_ARR;
+		return (double) trueCounter / NUM_SIZE_BOOL_ARR;
 	}
 
-	private void normalizingBrightness(){
+	private void normalizingBrightness() {
 		double minVal = Collections.min(this.brightnessMap.values());
 		double maxVal = Collections.max(this.brightnessMap.values());
-		double maxMinusMin = maxVal-minVal;
+		double maxMinusMin = maxVal - minVal;
 
 		TreeMap<Character, Double> normalizedMap = new TreeMap<>();
 

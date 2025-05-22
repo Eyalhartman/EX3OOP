@@ -98,8 +98,7 @@ public class Shell {
 				else {
 					throw new IOException(INCORRECT_OUTPUT_FORMAT_MSG);
 				}
-			}
-			catch (IOException e) {
+			} catch (IOException e) {
 				System.out.println(e.getMessage());
 			}
 		}
