@@ -28,12 +28,12 @@ public class SubImgCharMatcher {
 	private static final int MIN_VAL_ZERO = 0;
 	private static final int MIN_VALUE_ONE = 1;
 	private static final int ADD_SUB_ONE = 1;
-	private Map<Character, Double> brightnessMap = new HashMap<>() {
-	};
-	private List<Character> charset = new ArrayList<>();
+
 	private RoundingMode roundingMode;
 	private final double minBrightness;
 	private final double maxBrightness;
+	private Map<Character, Double> brightnessMap = new HashMap<>();
+	private final List<Character> charset = new ArrayList<>();
 
 	/**
 	 * Constructs a SubImgCharMatcher from a given array of characters.

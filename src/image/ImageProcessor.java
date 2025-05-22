@@ -108,7 +108,7 @@ public class ImageProcessor {
 
 		for (int row = 0; row < height; row++) {
 			for (int col = 0; col < width; col++) {
-				Color pixelColor = image.getPixel(col, row);
+				Color pixelColor = image.getPixel(row, col);
 				totalGrayValue += (pixelColor.getRed() * RED +
 						pixelColor.getGreen() * GREEN +
 						pixelColor.getBlue() * BLUE);
