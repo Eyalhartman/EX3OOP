@@ -4,7 +4,6 @@ import java.awt.*;
 
 /**
  * Utility class for image processing operations such as padding, splitting, brightness calculation, etc.
- *
  * @author Eyal and Dana
  */
 public class ImageProcessor {
@@ -20,7 +19,6 @@ public class ImageProcessor {
 	// Private constructor to prevent instantiation
 	private ImageProcessor() {
 	}
-
 	/**
 	 * Returns a new Image padded symmetrically to the next power-of-two dimensions.
 	 * If the source image already has width and height as powers of two, returns the original.
@@ -46,7 +44,7 @@ public class ImageProcessor {
 
 		// Calculate offsets to center the original image
 		int horizontalOffset = (paddedWidth - originalWidth) / HALF_DIVISOR;
-		int verticalOffset = (paddedHeight - originalHeight) / HALF_DIVISOR;
+		int verticalOffset   = (paddedHeight - originalHeight) / HALF_DIVISOR;
 
 		// Copy original pixels into centered position
 		for (int row = 0; row < originalHeight; row++) {
@@ -63,14 +61,14 @@ public class ImageProcessor {
 	 * Splits the image into a grid of square sub-images based on the specified number of sub-images per row.
 	 * Each sub-image is a square block of pixels.
 	 *
-	 * @param sourceImage     the source Image to split
-	 * @param subImagesPerRow the number of sub-images per row (grid width)
+	 * @param sourceImage      the source Image to split
+	 * @param subImagesPerRow  the number of sub-images per row (grid width)
 	 * @return a 2D array of sub-images [numberOfRows][subImagesPerRow]
 	 */
 	public static Image[][] splitImage(Image sourceImage, int subImagesPerRow) {
-		int fullWidth = sourceImage.getWidth();
-		int fullHeight = sourceImage.getHeight();
-		int squareSize = fullWidth / subImagesPerRow;
+		int fullWidth   = sourceImage.getWidth();
+		int fullHeight  = sourceImage.getHeight();
+		int squareSize  = fullWidth / subImagesPerRow;
 		int numberOfRows = fullHeight / squareSize;
 
 		Image[][] grid = new Image[numberOfRows][subImagesPerRow];
@@ -104,7 +102,7 @@ public class ImageProcessor {
 	 * @return the average brightness as a double value
 	 */
 	public static double computeAverageBrightness(Image image) {
-		int width = image.getWidth();
+		int width  = image.getWidth();
 		int height = image.getHeight();
 		double totalGrayValue = 0.0;
 
@@ -134,7 +132,7 @@ public class ImageProcessor {
 		return p;
 	}
 
-}
+	}
 
 
 
