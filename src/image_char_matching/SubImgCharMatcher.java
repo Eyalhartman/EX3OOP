@@ -120,6 +120,13 @@ public class SubImgCharMatcher {
 		normalizingBrightness();
 	}
 
+	/**
+	 * Calculates the brightness of a character by converting it to a boolean matrix
+	 * and counting the number of pixels set to {@code true}.
+	 *
+	 * @param c the character to compute brightness for
+	 * @return the normalized brightness value in [0,1]
+	 */
 	private double calcBrightness(char c) {
 		boolean[][] charToBool = CharConverter.convertToBoolArray(c);
 		int trueCounter = MIN_VAL_ZERO;
@@ -133,6 +140,11 @@ public class SubImgCharMatcher {
 		return (double) trueCounter / NUM_SIZE_BOOL_ARR;
 	}
 
+	/**
+	 * Normalizes the brightness values of all characters in the set
+	 * so that they fall within the range [0,1].
+	 * This method is called after adding or removing characters.
+	 */
 	private void normalizingBrightness() {
 		double minVal = Collections.min(this.brightnessMap.values());
 		double maxVal = Collections.max(this.brightnessMap.values());
