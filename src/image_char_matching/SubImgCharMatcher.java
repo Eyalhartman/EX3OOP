@@ -30,8 +30,8 @@ public class SubImgCharMatcher {
 	private static final int ADD_SUB_ONE = 1;
 
 	private RoundingMode roundingMode;
-	private final double minBrightness;
-	private final double maxBrightness;
+	private double minBrightness;
+	private double maxBrightness;
 	private Map<Character, Double> brightnessMap = new HashMap<>();
 	private final List<Character> charset = new ArrayList<>();
 
@@ -106,7 +106,7 @@ public class SubImgCharMatcher {
 	 * @param c the character to add
 	 */
 	public void addChar(char c) {
-		this.charset.add(c);
+		this.charset.add(Character.valueOf(c));
 		this.brightnessMap.put(c, calcBrightness(c));
 		normalizingBrightness();
 	}
@@ -118,7 +118,7 @@ public class SubImgCharMatcher {
 	 * @param c the character to remove
 	 */
 	public void removeChar(char c) {
-		this.charset.remove(c);
+		this.charset.remove(Character.valueOf(c));
 		this.brightnessMap.remove(c);
 		normalizingBrightness();
 	}
@@ -149,14 +149,17 @@ public class SubImgCharMatcher {
 	 * This method is called after adding or removing characters.
 	 */
 	private void normalizingBrightness() {
-		double minVal = Collections.min(this.brightnessMap.values());
-		double maxVal = Collections.max(this.brightnessMap.values());
-		double maxMinusMin = maxVal - minVal;
+		if (brightnessMap.isEmpty()) {
+			return; // Nothing to normalize
+		}
+		this.minBrightness = Collections.min(this.brightnessMap.values());
+		this.maxBrightness = Collections.max(this.brightnessMap.values());
+		double maxMinusMin = this.maxBrightness- this.minBrightness;
 
 		TreeMap<Character, Double> normalizedMap = new TreeMap<>();
 
 		for (Map.Entry<Character, Double> entry : brightnessMap.entrySet()) {
-			double newVal = (entry.getValue() - minVal) / maxMinusMin;
+			double newVal = (entry.getValue() - this.minBrightness) / maxMinusMin;
 			normalizedMap.put(entry.getKey(), newVal);
 		}
 		this.brightnessMap = normalizedMap;
