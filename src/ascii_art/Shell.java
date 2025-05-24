@@ -55,7 +55,6 @@ public class Shell {
 	private static final String OUTPUT_MSG = "output";
 	private static final String ASCII_MSG = "asciiArt";
 	private static final String ROUND_MSG = "round";
-	private static final int AFTER_RES_INDEX = RES_MSG.length();
 	private static final String INCORRECT_RES_FORMAT_MSG
 			= "Did not change resolution due to incorrect format.";
 	private static final String INCORRECT_RES_BOUND_MSG
@@ -128,7 +127,6 @@ public class Shell {
 				if (action.startsWith(EXIT_MSG)) break;
 				else if (action.startsWith(CHARS_MSG)) {
 					charsCmd();
-					matcherDirty = true;
 				} else if (action.startsWith(ADD_MSG)) {
 					addCmd(action);
 					matcherDirty = true;
@@ -209,6 +207,7 @@ public class Shell {
 			throw new IOException(INCORRECT_REMOVE_MSG);
 		}
 	}
+
 	/**
 	 * Helper method to remove a single character from the charset and matcher.
 	 *
@@ -265,7 +264,8 @@ public class Shell {
 			throw new IOException(INCORRECT_ADD_MSG);
 		}
 	}
-    	/**
+
+	/**
 	 * Helper method to add a single character to the charset and matcher.
 	 *
 	 * @param specificAdd the character to be added
@@ -300,29 +300,26 @@ public class Shell {
 	 * @throws IOException if the format is invalid or bounds are exceeded
 	 */
 	private void resCmd(String action) throws IOException {
-		String param = action.substring(AFTER_RES_INDEX).trim();
+		String[] parts = action.split(SPLIT_STRING);
 
-		if (param.isEmpty()) {
+		if (parts.length < 2) {
 			System.out.println(RESOLUTION_SET_TO + res + DOT);
 			return;
 		}
+		String param = parts[1];
 
-		int newRes;
-		if (param.startsWith(UP_MSG)) {
-			newRes = res * NEW_RES_FACTOR;
-		} else if (param.startsWith(DOWN_MSG)) {
-			newRes = res / NEW_RES_FACTOR;
-		} else {
-			throw new IOException(INCORRECT_RES_FORMAT_MSG);
-		}
+		int newRes = switch (param) {
+			case UP_MSG -> res * NEW_RES_FACTOR;
+			case DOWN_MSG -> res / NEW_RES_FACTOR;
+			default -> throw new IOException(INCORRECT_RES_FORMAT_MSG);
+		};
 
 		if (newRes < minCharsInRow || newRes > maxCharsInRow) {
 			throw new IOException(INCORRECT_RES_BOUND_MSG);
-		} else {
-			res = newRes;
-			asciiAlgoDirty = true;
-			System.out.println(RESOLUTION_SET_TO + res + DOT);
 		}
+		res = newRes;
+		asciiAlgoDirty = true;
+		System.out.println(RESOLUTION_SET_TO + res + DOT);
 	}
 
 	/**
@@ -332,7 +329,11 @@ public class Shell {
 	 * @throws IOException if the rounding mode is unrecognized
 	 */
 	private void roundCmd(String action) throws IOException {
-		String param = action.substring(ROUND_MSG.length()).trim();
+		String[] parts = action.split(SPLIT_STRING);
+		if (parts.length < 2) {
+			throw new IOException(INCORRECT_ROUNDING_MODE_MSG);
+		}
+		String param = parts[1];
 		switch (param) {
 			case UP_MSG -> {
 				this.roundingMode = RoundingMode.UP;
@@ -360,13 +361,15 @@ public class Shell {
 	 * @throws IOException if the input format is invalid
 	 */
 	private void outputCmd(String action) throws IOException {
-		String output = action.substring(OUTPUT_MSG.length()).trim();
-		if (output.startsWith(HTML_MSG)) {
-			this.output = OUTPUT_OPTIONS[INDEX_FIRST_CHAR];
-		} else if (output.startsWith(CONSOLE_MSG)) {
-			this.output = OUTPUT_OPTIONS[1];
-		} else {
-			throw new IOException(INCORRECT_OUTPUT_MSG);
+		String[] parts = action.split(SPLIT_STRING);
+		if (parts.length < 2) {
+			throw new IOException(INCORRECT_ROUNDING_MODE_MSG);
+		}
+		String param = parts[1];
+		switch (param) {
+			case HTML_MSG -> this.output = OUTPUT_OPTIONS[INDEX_FIRST_CHAR];
+			case CONSOLE_MSG -> this.output = OUTPUT_OPTIONS[1];
+			default -> throw new IOException(INCORRECT_OUTPUT_MSG);
 		}
 	}
 
