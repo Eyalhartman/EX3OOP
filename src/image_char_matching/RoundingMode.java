@@ -5,61 +5,26 @@ package image_char_matching;
  * {@code RoundingMode} is an enumeration of rounding strategies used
  * to convert a double precision brightness value to an integer index.
  *
- * <p>Each constant implements its own version of {@link #apply(double)},
+ * <p>Each constant implements its own version of rounding logic,
  * allowing flexible control over how a floating-point brightness score is mapped
  * to a character index during ASCII art generation.</p>
+ *
  * @author Eyal and Dana
  */
 public enum RoundingMode {
-    	/**
-	 * Rounds the value to the nearest integer using standard rounding.
-	 * Example: 2.5 → 3, 2.4 → 2
-	 */
-	UP {
-		/**
-		 * Rounds the value up to the nearest integer (ceiling).
-		 * Example: 2.1 → 3
-		 */
-		@Override
-		public int apply(double value) {
-			return (int) Math.ceil(value);
-		}
-	},
-
-    	/**
-	 * Rounds the value to the nearest integer using standard rounding.
-	 * Example: 2.5 → 3, 2.4 → 2
-	 */
-	DOWN {
-		/**
-		 * Rounds the value down to the nearest integer (floor).
-		 * Example: 2.9 → 2
-		 */
-		@Override
-		public int apply(double value) {
-			return (int) Math.floor(value);
-		}
-	},
-    	/**
-	 * Rounds the value to the nearest integer using standard rounding.
-	 * Example: 2.5 → 3, 2.4 → 2
-	 */
-	NEAREST {
-		/**
-		 * Rounds the value to the nearest integer using standard rounding.
-		 * Example: 2.5 → 3, 2.4 → 2
-		 */
-		@Override
-		public int apply(double value) {
-			return (int) Math.round(value);
-		}
-	};
-
 	/**
-	 * Applies the rounding mode to the given double value.
-	 *
-	 * @param value the value to round
-	 * @return the rounded integer result
+	 * Rounds the value to the nearest integer using standard rounding.
+	 * Example: 2.5 → 3, 2.4 → 2
 	 */
-	public abstract int apply(double value);
+	UP {},
+	/**
+	 * Rounds the value to the nearest integer using standard rounding.
+	 * Example: 2.5 → 3, 2.4 → 2
+	 */
+	DOWN {},
+	/**
+	 * Rounds the value to the nearest integer using standard rounding.
+	 * Example: 2.5 → 3, 2.4 → 2
+	 */
+	NEAREST {};
 }

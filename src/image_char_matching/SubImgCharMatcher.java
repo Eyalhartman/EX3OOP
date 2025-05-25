@@ -26,8 +26,7 @@ import java.util.*;
 public class SubImgCharMatcher {
 	private static final int NUM_SIZE_BOOL_ARR = 16 * 16;
 	private static final int MIN_VAL_ZERO = 0;
-	private static final int MIN_VALUE_ONE = 1;
-	private static final int ADD_SUB_ONE = 1;
+	private static final char SPACE_CHAR = ' ';
 
 	private RoundingMode roundingMode;
 	private double minBrightness;
@@ -84,19 +83,40 @@ public class SubImgCharMatcher {
 	 * @return the best-matching character
 	 */
 	public char getCharByImageBrightness(double brightness) {
-		// check if brightness is in range
-		double normalized = (brightness - minBrightness) / (maxBrightness - minBrightness);
-		normalized = Math.max(MIN_VAL_ZERO, Math.min(MIN_VALUE_ONE, normalized));
-		// scale to the range of charset size
-		double scaled = normalized * (charset.size() - ADD_SUB_ONE);
-		// round to the nearest index
-
-		int idx = roundingMode.apply(scaled);
-		// ensure index is within bounds
-
-		idx = Math.max(MIN_VAL_ZERO, Math.min(idx, charset.size() - ADD_SUB_ONE));
-		// return the character at the calculated index
-		return charset.get(idx);
+		double closestBrihtness = Double.MAX_VALUE;
+		char bestChar = SPACE_CHAR;
+		for (Map.Entry<Character, Double> entry : brightnessMap.entrySet()) {
+			switch (getRoundingMode()) {
+				case NEAREST: {
+					double diff = Math.abs(entry.getValue() - brightness);
+					if (diff < closestBrihtness) {
+						closestBrihtness = diff;
+						bestChar = entry.getKey();
+					} else if (diff == closestBrihtness && entry.getKey() < bestChar) {
+						bestChar = entry.getKey();
+					}
+				}
+				case UP: {
+					double diff = entry.getValue() - brightness;
+					if (diff >= MIN_VAL_ZERO && diff < closestBrihtness) {
+						closestBrihtness = diff;
+						bestChar = entry.getKey();
+					} else if (diff == closestBrihtness && entry.getKey() < bestChar) {
+						bestChar = entry.getKey();
+					}
+				}
+				case DOWN: {
+					double diff = brightness - entry.getValue();
+					if (diff >= MIN_VAL_ZERO && diff < closestBrihtness) {
+						closestBrihtness = diff;
+						bestChar = entry.getKey();
+					} else if (diff == closestBrihtness && entry.getKey() < bestChar) {
+						bestChar = entry.getKey();
+					}
+				}
+			}
+		}
+			return bestChar;
 	}
 
 
